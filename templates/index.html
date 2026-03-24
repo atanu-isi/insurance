@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Insurance Calculator</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f5f7fa;
+        }
+
+        /* Header */
+        .header {
+            background: #0f2a44;
+            color: white;
+            padding: 15px 25px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* Center layout */
+        .main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 90vh;
+        }
+
+        /* Card */
+        .card {
+            background: white;
+            padding: 30px;
+            width: 340px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0f2a44;
+            margin-bottom: 20px;
+        }
+
+        /* Dropdown */
+        select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        /* Upload box (SMALL) */
+        .upload-box {
+            display: block;
+            width: 65%;
+            margin: 0 auto;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .upload-box:hover {
+            border-color: #0f2a44;
+            background: #f4f7fb;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-name {
+            margin-top: 6px;
+            font-size: 11px;
+            color: #444;
+        }
+
+        /* Button */
+        button {
+            margin-top: 18px;
+            width: 100%;
+            padding: 9px;
+            background: #0f2a44;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        button:hover {
+            background: #0c2238;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="header">Insurance Calculator</div>
+
+<div class="main">
+    <div class="card">
+
+        <div class="title">Upload File</div>
+
+        <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="loading()">
+
+            <!-- Dropdown -->
+            <select name="calc_type" required>
+                <option value="">Select Type</option>
+                <option value="FRA">FRA</option>
+                <option value="GLA">GLA</option>
+            </select>
+
+            <!-- Upload -->
+            <label class="upload-box">
+                <input type="file" name="file" id="fileInput" required onchange="showFile()">
+                Upload Excel
+                <div class="file-name" id="fileName"></div>
+            </label>
+
+            <!-- Button -->
+            <button id="btn">Process</button>
+
+        </form>
+
+    </div>
+</div>
+
+<script>
+function showFile() {
+    let file = document.getElementById("fileInput").files[0];
+    document.getElementById("fileName").innerText = file.name;
+}
+
+function loading() {
+    document.getElementById("btn").innerText = "Processing...";
+}
+</script>
+
+</body>
+</html>
