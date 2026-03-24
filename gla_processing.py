@@ -1,50 +1,106 @@
 import pandas as pd
 import numpy as np
+from openpyxl import load_workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+import shutil
+import os
 
-def process_gla(input_path, output_path):
-
-    # -------------------------------
-    # Read File
-    # -------------------------------
-    df = pd.read_excel(input_path)
-
-    # -------------------------------
-    # Basic Validation
-    # -------------------------------
-    if df.shape[1] < 49:
-        raise ValueError("Invalid GLA file format: Required columns are missing")
+def process_gla(input_file, output_file="output_GLA.xlsx"):
+    """
+    Process GLA Excel file and return output file path
+    """
 
     # -------------------------------
-    # Column Mapping (Index-based)
+    # Read file
     # -------------------------------
-    STATUS = df.iloc[:, 1]
-    CNTTYPE = df.iloc[:, 24]
-    PREM_TERM = pd.to_numeric(df.iloc[:, 28], errors='coerce')
-    PREMCESDTE = pd.to_datetime(df.iloc[:, 33], errors='coerce')
-    ORIGINAL_SA = pd.to_numeric(df.iloc[:, 44], errors='coerce')
-    NEXT_PAYDATE = pd.to_datetime(df.iloc[:, 48], errors='coerce')
+    df = pd.read_excel(input_file)
 
     # -------------------------------
     # Calculations
     # -------------------------------
+    df["TAT for Payment Due date"] = (
+        pd.to_datetime(df["NEXT_PAYDATE"], errors='coerce') -
+        pd.to_datetime(df["PREMCESDTE"], errors='coerce')
+    ).dt.days
 
-    # TAT Calculation
-    tat_days = (NEXT_PAYDATE - PREMCESDTE).dt.days
-
-    # GLA Calculation
-    gla_calc = np.where(
-        (STATUS == 'IF') & (CNTTYPE.isin(['MSB', 'SMB'])),
-        0.01 * ORIGINAL_SA * PREM_TERM,
-        0
+    df["Protiviti GLA Calculation"] = np.where(
+        (df["STATUS"] == "IF") & (df["CNTTYPE"].isin(["MSB", "SMB"])),
+        (0.01 * df["ORIGINAL_SA"] * df["PREM_TERM"]).round(2),
+        0.00
     )
 
     # -------------------------------
-    # Add Output Columns
+    # Copy original file to output
     # -------------------------------
-    df['TAT for Payment Due date'] = tat_days
-    df['Protiviti_GLA_Calculation'] = np.round(gla_calc, 2)
+    if hasattr(input_file, "read"):  
+        # If file comes from Flask (FileStorage)
+        temp_input = "temp_input.xlsx"
+        df.to_excel(temp_input, index=False)
+        shutil.copy(temp_input, output_file)
+        os.remove(temp_input)
+    else:
+        shutil.copy(input_file, output_file)
 
     # -------------------------------
-    # Write Output
+    # Open workbook for formatting
     # -------------------------------
-    df.to_excel(output_path, index=False)
+    wb = load_workbook(output_file)
+    ws = wb.active
+
+    # Excel column positions
+    AZ_COL = 52   # AZ
+    BA_COL = 53   # BA
+
+    HEADER_ROW = 1  
+
+    # Styles
+    header_style = Font(bold=True, name="Arial", size=10)
+    header_fill  = PatternFill("solid", start_color="D9E1F2")
+
+    # -------------------------------
+    # Write headers
+    # -------------------------------
+    headers = [
+        (AZ_COL, "TAT for Payment Due date"),
+        (BA_COL, "Protiviti GLA Calculation")
+    ]
+
+    for col, label in headers:
+        cell = ws.cell(row=HEADER_ROW, column=col, value=label)
+        cell.font = header_style
+        cell.fill = header_fill
+        cell.alignment = Alignment(horizontal="center", wrap_text=True)
+
+    # -------------------------------
+    # Write data
+    # -------------------------------
+    DATA_START_ROW = 2
+
+    for i, (tat_val, gla_val) in enumerate(
+        zip(df["TAT for Payment Due date"], df["Protiviti GLA Calculation"])
+    ):
+        r = DATA_START_ROW + i
+
+        # TAT column
+        tat_cell = ws.cell(row=r, column=AZ_COL)
+        tat_cell.value = int(tat_val) if pd.notna(tat_val) else None
+        tat_cell.font = Font(name="Arial", size=10)
+        tat_cell.alignment = Alignment(horizontal="center")
+
+        # GLA column
+        gla_cell = ws.cell(row=r, column=BA_COL)
+        gla_cell.value = round(float(gla_val), 2) if pd.notna(gla_val) else None
+        gla_cell.number_format = '#,##0.00'
+        gla_cell.font = Font(name="Arial", size=10)
+        gla_cell.alignment = Alignment(horizontal="right")
+
+    # -------------------------------
+    # Adjust column width
+    # -------------------------------
+    ws.column_dimensions["AZ"].width = 28
+    ws.column_dimensions["BA"].width = 28
+
+    # Save file
+    wb.save(output_file)
+
+    return output_file
