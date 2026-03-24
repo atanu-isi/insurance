@@ -1,1029 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Insurance Calculator — Protiviti</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
-
-  <style>
-    /* ─── Reset & Variables ──────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --navy:       #0d2137;
-      --navy-mid:   #163352;
-      --navy-light: #1e4a75;
-      --gold:       #d4a843;
-      --gold-light: #f0c96b;
-      --amber:      #e8941a;
-      --calc-bg:    #fffbf0;
-      --calc-border:#d4a843;
-      --calc-text:  #7a5200;
-      --surface:    #ffffff;
-      --surface2:   #f7f9fc;
-      --border:     #e1e8f0;
-      --text:       #1a2a3a;
-      --text-muted: #6b7f93;
-      --green:      #1a8a5a;
-      --red:        #c0392b;
-      --radius:     10px;
-      --shadow:     0 4px 24px rgba(13,33,55,.10);
-      --shadow-lg:  0 12px 48px rgba(13,33,55,.18);
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--surface2);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    /* ─── Header ─────────────────────────────────────────────────── */
-    .header {
-      background: var(--navy);
-      padding: 0 32px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 2px 12px rgba(0,0,0,.25);
-      position: sticky; top: 0; z-index: 100;
-    }
-
-    .header-brand {
-      display: flex; align-items: center; gap: 12px;
-    }
-
-    .header-logo {
-      width: 32px; height: 32px;
-      background: var(--gold);
-      border-radius: 6px;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'DM Serif Display', serif;
-      font-size: 18px; color: var(--navy); font-weight: 700;
-    }
-
-    .header-title {
-      font-family: 'DM Serif Display', serif;
-      font-size: 18px; color: #fff; letter-spacing: .3px;
-    }
-
-    .header-badge {
-      font-size: 11px; font-weight: 600; letter-spacing: 1px;
-      color: var(--gold); background: rgba(212,168,67,.12);
-      border: 1px solid rgba(212,168,67,.3);
-      padding: 3px 10px; border-radius: 20px; text-transform: uppercase;
-    }
-
-    /* ─── Upload Section ─────────────────────────────────────────── */
-    .upload-section {
-      max-width: 560px;
-      margin: 48px auto 0;
-      padding: 0 20px;
-      animation: fadeUp .5s ease both;
-    }
-
-    .upload-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .upload-card-header {
-      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
-      padding: 24px 28px 20px;
-    }
-
-    .upload-card-header h2 {
-      font-family: 'DM Serif Display', serif;
-      font-size: 22px; color: #fff; margin-bottom: 4px;
-    }
-
-    .upload-card-header p {
-      font-size: 13px; color: rgba(255,255,255,.6);
-    }
-
-    .upload-card-body { padding: 28px; }
-
-    /* Select */
-    .form-group { margin-bottom: 20px; }
-
-    .form-label {
-      display: block; font-size: 12px; font-weight: 600;
-      letter-spacing: .6px; text-transform: uppercase;
-      color: var(--text-muted); margin-bottom: 8px;
-    }
-
-    .select-wrapper { position: relative; }
-
-    .select-wrapper::after {
-      content: "▾";
-      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-      pointer-events: none; color: var(--text-muted); font-size: 14px;
-    }
-
-    select {
-      width: 100%; padding: 11px 36px 11px 14px;
-      border: 1.5px solid var(--border); border-radius: var(--radius);
-      background: var(--surface); color: var(--text);
-      font-family: 'DM Sans', sans-serif; font-size: 14px;
-      appearance: none; cursor: pointer; transition: border-color .2s;
-    }
-
-    select:focus { outline: none; border-color: var(--navy-light); }
-
-    /* Drop zone */
-    .drop-zone {
-      border: 2px dashed var(--border);
-      border-radius: var(--radius);
-      padding: 32px 20px;
-      text-align: center;
-      cursor: pointer;
-      transition: all .25s ease;
-      position: relative;
-      background: var(--surface2);
-    }
-
-    .drop-zone:hover, .drop-zone.drag-over {
-      border-color: var(--navy-light);
-      background: #eef4fb;
-    }
-
-    .drop-zone input[type="file"] {
-      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%;
-    }
-
-    .drop-icon {
-      width: 44px; height: 44px; margin: 0 auto 12px;
-      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    .drop-icon svg { width: 22px; height: 22px; fill: none; stroke: #fff; stroke-width: 2; }
-
-    .drop-label { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
-    .drop-sublabel { font-size: 12px; color: var(--text-muted); }
-
-    .file-pill {
-      display: inline-flex; align-items: center; gap: 8px;
-      margin-top: 10px; padding: 5px 12px;
-      background: #eef4fb; border: 1px solid #cde;
-      border-radius: 20px; font-size: 12px; color: var(--navy-mid);
-      font-family: 'JetBrains Mono', monospace;
-    }
-
-    .file-pill svg { width: 13px; height: 13px; stroke: var(--navy-mid); fill: none; stroke-width: 2; }
-
-    /* Submit button */
-    .btn-process {
-      margin-top: 22px; width: 100%;
-      padding: 13px; border: none; border-radius: var(--radius);
-      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
-      color: #fff; font-family: 'DM Sans', sans-serif;
-      font-size: 14px; font-weight: 600; letter-spacing: .4px;
-      cursor: pointer; transition: all .2s; position: relative; overflow: hidden;
-    }
-
-    .btn-process::after {
-      content: ''; position: absolute; inset: 0;
-      background: rgba(255,255,255,0); transition: background .2s;
-    }
-
-    .btn-process:hover::after { background: rgba(255,255,255,.08); }
-    .btn-process:active { transform: scale(.99); }
-    .btn-process:disabled { opacity: .65; cursor: not-allowed; }
-
-    .btn-inner { display: flex; align-items: center; justify-content: center; gap: 8px; }
-
-    /* Spinner */
-    .spinner {
-      width: 16px; height: 16px;
-      border: 2px solid rgba(255,255,255,.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin .7s linear infinite;
-      display: none;
-    }
-
-    /* ─── Error banner ───────────────────────────────────────────── */
-    .error-banner {
-      margin: 16px 28px;
-      padding: 12px 16px;
-      background: #fff5f5; border: 1px solid #fcc;
-      border-radius: var(--radius); font-size: 13px; color: var(--red);
-      display: none; align-items: flex-start; gap: 10px;
-    }
-
-    /* ─── Results Section ────────────────────────────────────────── */
-    #results-section {
-      max-width: 100%;
-      padding: 32px 24px;
-      display: none;
-      animation: fadeUp .5s ease both;
-    }
-
-    .results-header {
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 16px;
-      max-width: 1400px; margin: 0 auto 20px;
-    }
-
-    .results-title {
-      font-family: 'DM Serif Display', serif;
-      font-size: 22px; color: var(--navy);
-    }
-
-    .results-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-
-    /* Stat cards */
-    .stats-row {
-      display: flex; gap: 14px; flex-wrap: wrap;
-      max-width: 1400px; margin: 0 auto 20px;
-    }
-
-    .stat-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--radius); padding: 14px 20px;
-      display: flex; align-items: center; gap: 14px;
-      box-shadow: 0 2px 8px rgba(13,33,55,.05);
-      min-width: 160px;
-    }
-
-    .stat-icon {
-      width: 38px; height: 38px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .stat-icon.blue  { background: #e8f0fa; }
-    .stat-icon.gold  { background: #fff8e6; }
-    .stat-icon.green { background: #e8f5ef; }
-
-    .stat-icon svg { width: 18px; height: 18px; fill: none; stroke-width: 2; }
-    .stat-icon.blue  svg { stroke: var(--navy-light); }
-    .stat-icon.gold  svg { stroke: var(--amber); }
-    .stat-icon.green svg { stroke: var(--green); }
-
-    .stat-value { font-size: 22px; font-weight: 600; font-family: 'JetBrains Mono', monospace; line-height: 1; }
-    .stat-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .6px; margin-top: 3px; }
-
-    /* Calc column legend */
-    .legend {
-      max-width: 1400px; margin: 0 auto 14px;
-      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    }
-
-    .legend-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
-
-    .legend-pill {
-      font-size: 11px; font-weight: 600; font-family: 'JetBrains Mono', monospace;
-      padding: 3px 10px; border-radius: 20px;
-      background: var(--calc-bg); border: 1px solid var(--calc-border);
-      color: var(--calc-text);
-    }
-
-    /* Toolbar */
-    .table-toolbar {
-      max-width: 1400px; margin: 0 auto 12px;
-      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-      justify-content: space-between;
-    }
-
-    .search-box {
-      display: flex; align-items: center; gap: 8px;
-      background: var(--surface); border: 1.5px solid var(--border);
-      border-radius: var(--radius); padding: 8px 12px;
-      width: 280px; transition: border-color .2s;
-    }
-
-    .search-box:focus-within { border-color: var(--navy-light); }
-
-    .search-box svg { width: 15px; height: 15px; stroke: var(--text-muted); fill: none; stroke-width: 2; flex-shrink: 0; }
-
-    .search-box input {
-      border: none; outline: none; background: transparent;
-      font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text);
-      width: 100%;
-    }
-
-    .search-box input::placeholder { color: var(--text-muted); }
-
-    .row-count-label { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
-
-    /* Table container */
-    .table-wrap {
-      max-width: 1400px; margin: 0 auto;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 12px; box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .table-scroll { overflow-x: auto; overflow-y: auto; max-height: 540px; }
-
-    table {
-      width: 100%; border-collapse: collapse;
-      font-size: 13px; white-space: nowrap;
-    }
-
-    thead { position: sticky; top: 0; z-index: 10; }
-
-    th {
-      background: var(--navy);
-      color: rgba(255,255,255,.85);
-      padding: 11px 14px;
-      text-align: left;
-      font-size: 11px; font-weight: 600;
-      letter-spacing: .5px; text-transform: uppercase;
-      border-right: 1px solid rgba(255,255,255,.06);
-      cursor: pointer; user-select: none;
-      transition: background .15s;
-    }
-
-    th:hover { background: var(--navy-mid); }
-
-    th.calc-col {
-      background: #4a3200;
-      color: var(--gold-light);
-      border-right: 1px solid rgba(212,168,67,.25);
-    }
-
-    th.calc-col:hover { background: #5a3e00; }
-
-    th .sort-arrow { margin-left: 4px; opacity: .5; font-size: 10px; }
-    th.sorted-asc  .sort-arrow, th.sorted-desc .sort-arrow { opacity: 1; }
-
-    th.row-num-col { width: 52px; text-align: center; cursor: default; }
-
-    td {
-      padding: 9px 14px;
-      border-bottom: 1px solid var(--border);
-      border-right: 1px solid #f0f4f8;
-      color: var(--text);
-      font-size: 12.5px;
-      transition: background .1s;
-    }
-
-    td.row-num {
-      text-align: center; font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; color: var(--text-muted); background: var(--surface2);
-      border-right: 2px solid var(--border);
-    }
-
-    td.calc-col {
-      background: var(--calc-bg);
-      color: var(--calc-text);
-      font-family: 'JetBrains Mono', monospace;
-      font-weight: 600; font-size: 12px;
-      border-right: 1px solid #e8d5a0;
-    }
-
-    td.null-val { color: #b0bec5; font-style: italic; font-size: 11px; }
-
-    tr:last-child td { border-bottom: none; }
-
-    tbody tr:nth-child(even) td:not(.calc-col):not(.row-num) { background: #fafcfe; }
-
-    tbody tr:hover td:not(.calc-col):not(.row-num) { background: #eef4fb; }
-    tbody tr:hover td.calc-col { background: #fff3c4; }
-
-    /* No results */
-    .no-results {
-      text-align: center; padding: 48px 20px;
-      color: var(--text-muted); font-size: 14px;
-    }
-
-    /* Pagination */
-    .pagination {
-      max-width: 1400px; margin: 14px auto 0;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 10px;
-    }
-
-    .pag-info { font-size: 12px; color: var(--text-muted); }
-
-    .pag-controls { display: flex; gap: 6px; }
-
-    .pag-btn {
-      height: 30px; min-width: 30px; padding: 0 8px;
-      border: 1.5px solid var(--border); background: var(--surface);
-      border-radius: 6px; font-size: 12px; font-family: 'DM Sans', sans-serif;
-      color: var(--text); cursor: pointer; transition: all .15s;
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    .pag-btn:hover:not(:disabled) { border-color: var(--navy); color: var(--navy); background: #eef4fb; }
-    .pag-btn.active { background: var(--navy); border-color: var(--navy); color: #fff; }
-    .pag-btn:disabled { opacity: .4; cursor: not-allowed; }
-
-    /* Download button */
-    .btn-download {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 10px 20px; border-radius: var(--radius);
-      background: linear-gradient(135deg, var(--gold) 0%, var(--amber) 100%);
-      color: var(--navy); font-weight: 700; font-size: 13px;
-      border: none; cursor: pointer; transition: all .2s;
-      box-shadow: 0 2px 10px rgba(212,168,67,.35);
-      text-decoration: none;
-    }
-
-    .btn-download:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(212,168,67,.45); }
-    .btn-download svg { width: 15px; height: 15px; fill: none; stroke: var(--navy); stroke-width: 2.5; }
-
-    .btn-reset {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 10px 16px; border-radius: var(--radius);
-      background: var(--surface); border: 1.5px solid var(--border);
-      color: var(--text-muted); font-size: 13px; font-weight: 500;
-      cursor: pointer; transition: all .15s;
-    }
-
-    .btn-reset:hover { border-color: var(--navy); color: var(--navy); background: #eef4fb; }
-    .btn-reset svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
-
-    /* Column filter chip */
-    .col-filter-wrap {
-      max-width: 1400px; margin: 0 auto 10px;
-      display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
-    }
-
-    .col-filter-label { font-size: 12px; color: var(--text-muted); font-weight: 500; }
-
-    .col-chip {
-      font-size: 11px; padding: 4px 10px; border-radius: 20px;
-      border: 1.5px solid var(--border); background: var(--surface);
-      cursor: pointer; transition: all .15s; font-family: 'DM Sans', sans-serif;
-      color: var(--text-muted); white-space: nowrap;
-    }
-
-    .col-chip.active { background: var(--navy); border-color: var(--navy); color: #fff; }
-    .col-chip.calc { border-color: var(--calc-border); color: var(--calc-text); background: var(--calc-bg); }
-    .col-chip.calc.active { background: var(--amber); border-color: var(--amber); color: #fff; }
-
-    /* ─── Animations ─────────────────────────────────────────────── */
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(18px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* ─── Responsive ─────────────────────────────────────────────── */
-    @media (max-width: 600px) {
-      .upload-section { margin-top: 24px; }
-      .results-header { flex-direction: column; align-items: flex-start; }
-      .search-box { width: 100%; }
-      .stat-card { min-width: 120px; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Insurance Calculator</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #f5f7fa;
+        }
+
+        /* Header */
+        .header {
+            background: #0f2a44;
+            color: white;
+            padding: 15px 25px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        /* Center layout */
+        .main {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 90vh;
+        }
+
+        /* Card */
+        .card {
+            background: white;
+            padding: 30px;
+            width: 340px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        .title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #0f2a44;
+            margin-bottom: 20px;
+        }
+
+        /* Dropdown */
+        select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        /* Upload box (SMALL) */
+        .upload-box {
+            display: block;
+            width: 65%;
+            margin: 0 auto;
+            padding: 12px;
+            border-radius: 5px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .upload-box:hover {
+            border-color: #0f2a44;
+            background: #f4f7fb;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-name {
+            margin-top: 6px;
+            font-size: 11px;
+            color: #444;
+        }
+
+        /* Button */
+        button {
+            margin-top: 18px;
+            width: 100%;
+            padding: 9px;
+            background: #0f2a44;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        button:hover {
+            background: #0c2238;
+        }
+
+    </style>
 </head>
 
 <body>
 
-<!-- ─── Header ──────────────────────────────────────────────────── -->
-<header class="header">
-  <div class="header-brand">
-    <div class="header-logo">P</div>
-    <span class="header-title">Insurance Calculator</span>
-  </div>
-  <span class="header-badge">Protiviti Internal Tool</span>
-</header>
+<div class="header">Insurance Calculator</div>
 
+<div class="main">
+    <div class="card">
 
-<!-- ─── Upload Section ──────────────────────────────────────────── -->
-<section class="upload-section" id="upload-section">
-  <div class="upload-card">
+        <div class="title">Upload File</div>
 
-    <div class="upload-card-header">
-      <h2>Process Excel File</h2>
-      <p>Select a calculation type, upload your Excel file, and view results in-page.</p>
+        <form action="/upload" method="post" enctype="multipart/form-data" onsubmit="loading()">
+
+            <!-- Dropdown -->
+            <select name="calc_type" required>
+                <option value="">Select Type</option>
+                <option value="FRA">FRA</option>
+                <option value="GLA">GLA</option>
+            </select>
+
+            <!-- Upload -->
+            <label class="upload-box">
+                <input type="file" name="file" id="fileInput" required onchange="showFile()">
+                Upload Excel
+                <div class="file-name" id="fileName"></div>
+            </label>
+
+            <!-- Button -->
+            <button id="btn">Process</button>
+
+        </form>
+
     </div>
-
-    <div class="upload-card-body">
-
-      <!-- Dropdown -->
-      <div class="form-group">
-        <label class="form-label">Calculation Type</label>
-        <div class="select-wrapper">
-          <select id="calc_type" required>
-            <option value="">— Select Type —</option>
-            <option value="FRA">FRA — Future Reserve Amount</option>
-            <option value="GLA">GLA — Group Life Assurance</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Drop zone -->
-      <div class="form-group">
-        <label class="form-label">Excel File</label>
-        <div class="drop-zone" id="dropZone">
-          <input type="file" id="fileInput" accept=".xlsx,.xls" />
-          <div class="drop-icon">
-            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
-          </div>
-          <div class="drop-label">Drop Excel file here or click to browse</div>
-          <div class="drop-sublabel">.xlsx or .xls files supported</div>
-          <div class="file-pill" id="filePill" style="display:none;">
-            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8zM14 2v6h6"/></svg>
-            <span id="fileName"></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Submit -->
-      <button class="btn-process" id="btnProcess" onclick="handleSubmit()">
-        <div class="btn-inner">
-          <div class="spinner" id="spinner"></div>
-          <span id="btnText">Process File</span>
-        </div>
-      </button>
-    </div>
-
-    <!-- Error -->
-    <div class="error-banner" id="errorBanner">
-      <span>⚠</span>
-      <span id="errorMsg"></span>
-    </div>
-
-  </div>
-</section>
-
-
-<!-- ─── Results Section ──────────────────────────────────────────── -->
-<section id="results-section">
-
-  <!-- Header row -->
-  <div class="results-header">
-    <div>
-      <div class="results-title" id="resultsTitle">Results</div>
-      <div style="font-size:12px;color:var(--text-muted);margin-top:3px;" id="resultsSubtitle"></div>
-    </div>
-    <div class="results-actions">
-      <button class="btn-reset" onclick="resetUI()">
-        <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 109-9M3 3v6h6"/></svg>
-        New File
-      </button>
-      <a class="btn-download" id="downloadBtn" href="#" target="_blank">
-        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-        Download Excel
-      </a>
-    </div>
-  </div>
-
-  <!-- Stat cards -->
-  <div class="stats-row" id="statsRow"></div>
-
-  <!-- Legend -->
-  <div class="legend" id="legend">
-    <span class="legend-label">⭐ Calculated columns:</span>
-  </div>
-
-  <!-- Column filter chips -->
-  <div class="col-filter-wrap" id="colFilterWrap">
-    <span class="col-filter-label">Show columns:</span>
-  </div>
-
-  <!-- Table toolbar -->
-  <div class="table-toolbar">
-    <div class="search-box">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input type="text" id="searchInput" placeholder="Search in results…" oninput="applySearch()" />
-    </div>
-    <span class="row-count-label" id="rowCountLabel"></span>
-  </div>
-
-  <!-- Table -->
-  <div class="table-wrap">
-    <div class="table-scroll">
-      <table id="dataTable">
-        <thead id="tableHead"></thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Pagination -->
-  <div class="pagination" id="pagination">
-    <span class="pag-info" id="pagInfo"></span>
-    <div class="pag-controls" id="pagControls"></div>
-  </div>
-
-</section>
-
+</div>
 
 <script>
-// ─────────────────────────────────────────────────────────────────
-//  State
-// ─────────────────────────────────────────────────────────────────
-let allColumns      = [];
-let allRows         = [];
-let filteredRows    = [];
-let calcColSet      = new Set();
-let visibleColIdxs  = [];
-let sortColIdx      = null;
-let sortDir         = 'asc';
-let searchQuery     = '';
-let currentPage     = 1;
-const PAGE_SIZE     = 50;
-
-// ─────────────────────────────────────────────────────────────────
-//  Drop-zone
-// ─────────────────────────────────────────────────────────────────
-const dropZone = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
-
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault(); dropZone.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file) { fileInput.files = e.dataTransfer.files; updateFileName(file.name); }
-});
-fileInput.addEventListener('change', () => { if (fileInput.files[0]) updateFileName(fileInput.files[0].name); });
-
-function updateFileName(name) {
-  document.getElementById('fileName').textContent = name;
-  document.getElementById('filePill').style.display = 'inline-flex';
+function showFile() {
+    let file = document.getElementById("fileInput").files[0];
+    document.getElementById("fileName").innerText = file.name;
 }
 
-// ─────────────────────────────────────────────────────────────────
-//  Submit
-// ─────────────────────────────────────────────────────────────────
-async function handleSubmit() {
-  const calcType = document.getElementById('calc_type').value;
-  const file     = fileInput.files[0];
-
-  if (!calcType)  { showError('Please select a calculation type.'); return; }
-  if (!file)      { showError('Please select an Excel file.'); return; }
-
-  hideError();
-  setLoading(true);
-
-  const fd = new FormData();
-  fd.append('calc_type', calcType);
-  fd.append('file', file);
-
-  try {
-    const res  = await fetch('/upload', { method: 'POST', body: fd });
-    const data = await res.json();
-
-    if (!res.ok || data.error) {
-      showError(data.error || 'An unexpected error occurred.');
-      setLoading(false);
-      return;
-    }
-
-    renderResults(data);
-  } catch (err) {
-    showError('Network error: ' + err.message);
-  }
-
-  setLoading(false);
-}
-
-// ─────────────────────────────────────────────────────────────────
-//  Render results
-// ─────────────────────────────────────────────────────────────────
-function renderResults(data) {
-  allColumns   = data.columns;
-  allRows      = data.rows;
-  filteredRows = [...allRows];
-  calcColSet   = new Set(data.calculated_cols);
-  currentPage  = 1;
-  sortColIdx   = null;
-  searchQuery  = '';
-  document.getElementById('searchInput').value = '';
-
-  // Download link
-  document.getElementById('downloadBtn').href = '/download/' + encodeURIComponent(data.output_file);
-
-  // Title / subtitle
-  document.getElementById('resultsTitle').textContent =
-    (data.calc_type === 'FRA' ? 'FRA — Future Reserve Amount' : 'GLA — Group Life Assurance') + ' Results';
-  document.getElementById('resultsSubtitle').textContent =
-    `Processing complete · ${data.total_rows.toLocaleString()} total rows`;
-
-  // Stats
-  const calcCount = data.calculated_cols.length;
-  document.getElementById('statsRow').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-icon blue">
-        <svg viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-      </div>
-      <div>
-        <div class="stat-value">${data.total_rows.toLocaleString()}</div>
-        <div class="stat-label">Total Rows</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon gold">
-        <svg viewBox="0 0 24 24"><path d="M9 7h6M9 12h6M9 17h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
-      </div>
-      <div>
-        <div class="stat-value">${allColumns.length}</div>
-        <div class="stat-label">Columns</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon green">
-        <svg viewBox="0 0 24 24"><path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
-      </div>
-      <div>
-        <div class="stat-value">${calcCount}</div>
-        <div class="stat-label">Calc Columns</div>
-      </div>
-    </div>
-    ${data.preview_rows < data.total_rows ? `
-    <div class="stat-card">
-      <div class="stat-icon blue">
-        <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8zM12 9a3 3 0 100 6 3 3 0 000-6z"/></svg>
-      </div>
-      <div>
-        <div class="stat-value">${data.preview_rows}</div>
-        <div class="stat-label">Rows Shown</div>
-      </div>
-    </div>` : ''}
-  `;
-
-  // Legend
-  const legend = document.getElementById('legend');
-  legend.innerHTML = '<span class="legend-label">⭐ Calculated columns:</span>';
-  data.calculated_cols.forEach(col => {
-    const pill = document.createElement('span');
-    pill.className = 'legend-pill';
-    pill.textContent = col;
-    legend.appendChild(pill);
-  });
-
-  // Column filter chips
-  buildColChips();
-
-  // Default: show all columns
-  visibleColIdxs = allColumns.map((_, i) => i);
-
-  // Render table
-  buildTableHead();
-  applySearch();
-
-  // Show results, hide upload
-  document.getElementById('upload-section').style.display = 'none';
-  document.getElementById('results-section').style.display = 'block';
-  document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
-}
-
-// ─────────────────────────────────────────────────────────────────
-//  Column filter chips
-// ─────────────────────────────────────────────────────────────────
-function buildColChips() {
-  const wrap = document.getElementById('colFilterWrap');
-  wrap.innerHTML = '<span class="col-filter-label">Show columns:</span>';
-
-  // "All" chip
-  const allChip = document.createElement('span');
-  allChip.className = 'col-chip active';
-  allChip.textContent = 'All Columns';
-  allChip.dataset.mode = 'all';
-  allChip.onclick = () => {
-    visibleColIdxs = allColumns.map((_, i) => i);
-    wrap.querySelectorAll('.col-chip').forEach(c => c.classList.remove('active'));
-    allChip.classList.add('active');
-    buildTableHead(); renderPage();
-  };
-  wrap.appendChild(allChip);
-
-  // "Calculated Only" chip
-  const calcChip = document.createElement('span');
-  calcChip.className = 'col-chip calc';
-  calcChip.textContent = '⭐ Calculated Only';
-  calcChip.onclick = () => {
-    visibleColIdxs = allColumns
-      .map((col, i) => calcColSet.has(col) ? i : -1)
-      .filter(i => i >= 0);
-    wrap.querySelectorAll('.col-chip').forEach(c => c.classList.remove('active'));
-    calcChip.classList.add('active');
-    buildTableHead(); renderPage();
-  };
-  wrap.appendChild(calcChip);
-}
-
-// ─────────────────────────────────────────────────────────────────
-//  Table head
-// ─────────────────────────────────────────────────────────────────
-function buildTableHead() {
-  const thead = document.getElementById('tableHead');
-  const tr = document.createElement('tr');
-
-  // Row number header
-  const thNum = document.createElement('th');
-  thNum.className = 'row-num-col';
-  thNum.textContent = '#';
-  tr.appendChild(thNum);
-
-  visibleColIdxs.forEach(ci => {
-    const col = allColumns[ci];
-    const th  = document.createElement('th');
-    th.textContent = col;
-    if (calcColSet.has(col)) th.classList.add('calc-col');
-
-    const arrow = document.createElement('span');
-    arrow.className = 'sort-arrow';
-    arrow.textContent = '↕';
-    th.appendChild(arrow);
-
-    if (sortColIdx === ci) {
-      th.classList.add(sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
-      arrow.textContent = sortDir === 'asc' ? '↑' : '↓';
-    }
-
-    th.onclick = () => sortBy(ci);
-    tr.appendChild(th);
-  });
-
-  thead.innerHTML = '';
-  thead.appendChild(tr);
-}
-
-// ─────────────────────────────────────────────────────────────────
-//  Sort
-// ─────────────────────────────────────────────────────────────────
-function sortBy(colIdx) {
-  if (sortColIdx === colIdx) {
-    sortDir = sortDir === 'asc' ? 'desc' : 'asc';
-  } else {
-    sortColIdx = colIdx; sortDir = 'asc';
-  }
-
-  filteredRows.sort((a, b) => {
-    const va = a[colIdx], vb = b[colIdx];
-    if (va === null && vb === null) return 0;
-    if (va === null) return 1;
-    if (vb === null) return -1;
-    const na = Number(va), nb = Number(vb);
-    const cmp = !isNaN(na) && !isNaN(nb)
-      ? na - nb
-      : String(va).localeCompare(String(vb));
-    return sortDir === 'asc' ? cmp : -cmp;
-  });
-
-  currentPage = 1;
-  buildTableHead();
-  renderPage();
-}
-
-// ─────────────────────────────────────────────────────────────────
-//  Search
-// ─────────────────────────────────────────────────────────────────
-function applySearch() {
-  searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
-  if (!searchQuery) {
-    filteredRows = [...allRows];
-  } else {
-    filteredRows = allRows.filter(row =>
-      row.some(v => v !== null && String(v).toLowerCase().includes(searchQuery))
-    );
-  }
-  currentPage = 1;
-  renderPage();
-}
-
-// ─────────────────────────────────────────────────────────────────
-//  Render page
-// ─────────────────────────────────────────────────────────────────
-function renderPage() {
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '';
-
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
-  if (currentPage > totalPages) currentPage = 1;
-
-  const start = (currentPage - 1) * PAGE_SIZE;
-  const pageRows = filteredRows.slice(start, start + PAGE_SIZE);
-
-  if (pageRows.length === 0) {
-    const tr = document.createElement('tr');
-    const td = document.createElement('td');
-    td.colSpan = visibleColIdxs.length + 1;
-    td.className = 'no-results';
-    td.textContent = 'No rows match your search.';
-    tr.appendChild(td); tbody.appendChild(tr);
-  } else {
-    pageRows.forEach((row, i) => {
-      const tr = document.createElement('tr');
-
-      // Row number
-      const tdNum = document.createElement('td');
-      tdNum.className = 'row-num';
-      tdNum.textContent = (start + i + 1).toLocaleString();
-      tr.appendChild(tdNum);
-
-      visibleColIdxs.forEach(ci => {
-        const td  = document.createElement('td');
-        const col = allColumns[ci];
-        const val = row[ci];
-
-        if (calcColSet.has(col)) td.classList.add('calc-col');
-
-        if (val === null || val === undefined || val === '') {
-          td.classList.add('null-val');
-          td.textContent = '—';
-        } else if (typeof val === 'number') {
-          td.textContent = Number.isInteger(val)
-            ? val.toLocaleString()
-            : val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
-          td.style.textAlign = 'right';
-        } else {
-          td.textContent = val;
-        }
-
-        tr.appendChild(td);
-      });
-
-      tbody.appendChild(tr);
-    });
-  }
-
-  // Row count label
-  document.getElementById('rowCountLabel').textContent =
-    `Showing ${Math.min(start + 1, filteredRows.length).toLocaleString()}–${Math.min(start + PAGE_SIZE, filteredRows.length).toLocaleString()} of ${filteredRows.length.toLocaleString()} rows`;
-
-  // Pagination
-  renderPagination(totalPages);
-}
-
-// ─────────────────────────────────────────────────────────────────
-//  Pagination
-// ─────────────────────────────────────────────────────────────────
-function renderPagination(totalPages) {
-  const info = document.getElementById('pagInfo');
-  const ctrls = document.getElementById('pagControls');
-
-  info.textContent = `Page ${currentPage} of ${totalPages}`;
-  ctrls.innerHTML = '';
-
-  function addBtn(label, page, active = false, disabled = false) {
-    const btn = document.createElement('button');
-    btn.className = 'pag-btn' + (active ? ' active' : '');
-    btn.textContent = label;
-    btn.disabled = disabled;
-    btn.onclick = () => { currentPage = page; renderPage(); };
-    ctrls.appendChild(btn);
-  }
-
-  addBtn('‹', currentPage - 1, false, currentPage === 1);
-
-  const pages = new Set();
-  [1, 2, currentPage - 1, currentPage, currentPage + 1, totalPages - 1, totalPages]
-    .filter(p => p >= 1 && p <= totalPages)
-    .forEach(p => pages.add(p));
-
-  let prev = null;
-  [...pages].sort((a, b) => a - b).forEach(p => {
-    if (prev !== null && p - prev > 1) {
-      const dots = document.createElement('span');
-      dots.className = 'pag-btn'; dots.textContent = '…'; dots.disabled = true;
-      ctrls.appendChild(dots);
-    }
-    addBtn(p, p, p === currentPage);
-    prev = p;
-  });
-
-  addBtn('›', currentPage + 1, false, currentPage === totalPages);
-}
-
-// ─────────────────────────────────────────────────────────────────
-//  Helpers
-// ─────────────────────────────────────────────────────────────────
-function setLoading(on) {
-  document.getElementById('btnProcess').disabled = on;
-  document.getElementById('spinner').style.display = on ? 'block' : 'none';
-  document.getElementById('btnText').textContent = on ? 'Processing…' : 'Process File';
-}
-
-function showError(msg) {
-  const b = document.getElementById('errorBanner');
-  document.getElementById('errorMsg').textContent = msg;
-  b.style.display = 'flex';
-}
-
-function hideError() {
-  document.getElementById('errorBanner').style.display = 'none';
-}
-
-function resetUI() {
-  document.getElementById('results-section').style.display = 'none';
-  document.getElementById('upload-section').style.display = 'block';
-  fileInput.value = '';
-  document.getElementById('filePill').style.display = 'none';
-  document.getElementById('calc_type').value = '';
-  hideError();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+function loading() {
+    document.getElementById("btn").innerText = "Processing...";
 }
 </script>
 
