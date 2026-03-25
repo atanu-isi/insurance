@@ -1,16 +1,17 @@
 import pandas as pd
 import numpy as np
 
+
 def process_fra(input_path, output_path):
 
     df = pd.read_excel(input_path)
 
-    STATUS = df.iloc[:, 1]
-    CNTTYPE = df.iloc[:, 24]
-    RISK_TERM = pd.to_numeric(df.iloc[:, 27], errors='coerce')
-    PREM_TERM = pd.to_numeric(df.iloc[:, 28], errors='coerce')
-    FREQUENCY = pd.to_numeric(df.iloc[:, 29], errors='coerce')
-    RCDDATE = pd.to_datetime(df.iloc[:, 30], errors='coerce')
+    STATUS     = df.iloc[:, 1]
+    CNTTYPE    = df.iloc[:, 24]
+    RISK_TERM  = pd.to_numeric(df.iloc[:, 27], errors='coerce')
+    PREM_TERM  = pd.to_numeric(df.iloc[:, 28], errors='coerce')
+    FREQUENCY  = pd.to_numeric(df.iloc[:, 29], errors='coerce')
+    RCDDATE    = pd.to_datetime(df.iloc[:, 30], errors='coerce')
     PAIDTODATE = pd.to_datetime(df.iloc[:, 31], errors='coerce')
     PREMCESDTE = pd.to_datetime(df.iloc[:, 33], errors='coerce')
     NEXT_PAYDATE = pd.to_datetime(df.iloc[:, 48], errors='coerce')
@@ -20,7 +21,7 @@ def process_fra(input_path, output_path):
     # Calculations
     # -------------------------------
 
-    policy_year_check = RISK_TERM - ((NEXT_PAYDATE - RCDDATE).dt.days // 365)
+    policy_year_check  = RISK_TERM - ((NEXT_PAYDATE - RCDDATE).dt.days // 365)
     years_premium_paid = (PAIDTODATE - RCDDATE).dt.days // 365
 
     annualized_premium = np.round(np.select(
@@ -67,22 +68,21 @@ def process_fra(input_path, output_path):
     # -------------------------------
 
     new_cols = pd.DataFrame({
-        'Policy Year Check': policy_year_check.values,
+        'Policy Year Check':               policy_year_check.values,
         'Number of years Premium is paid': years_premium_paid.values,
-        'Annualized Premium': annualized_premium,
-        'Paid up factor': paid_up_factor.values,
-        'Protiviti Output FRA': np.round(fra_values, 2),
+        'Annualized Premium':              annualized_premium,
+        'Paid up factor':                  paid_up_factor.values,
+        'Protiviti Output FRA':            np.round(fra_values, 2),
     })
 
     # -------------------------------
-    # Insert columns
+    # Insert columns after BASE_PREMIUM
     # -------------------------------
 
     if 'BASE_PREMIUM' not in df.columns:
         raise ValueError("BASE_PREMIUM column not found")
 
     base_idx = df.columns.get_loc('BASE_PREMIUM')
-
     df.insert(base_idx + 1, 'Unnamed: 52', np.nan)
 
     for i, col in enumerate(new_cols.columns):
@@ -108,3 +108,5 @@ def process_fra(input_path, output_path):
             if col_name in df.columns:
                 col_idx = df.columns.get_loc(col_name)
                 ws.set_column(col_idx, col_idx, 18, dec2_fmt)
+
+    return df  # ← return for JSON preview
