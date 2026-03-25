@@ -514,7 +514,7 @@
         <div class="select-wrapper">
           <select id="calc_type" required>
             <option value="">— Select Type —</option>
-            <option value="FRA">FRA — Future Reserve Amount</option>
+            <option value="FRA">FRA — Forward Rate Agreements</option>
             <option value="GLA">GLA — Group Life Assurance</option>
           </select>
         </div>
@@ -706,7 +706,7 @@ function renderResults(data) {
 
   // Title / subtitle
   document.getElementById('resultsTitle').textContent =
-    (data.calc_type === 'FRA' ? 'FRA — Future Reserve Amount' : 'GLA — Group Life Assurance') + ' Results';
+    (data.calc_type === 'FRA' ? 'FRA — Forward Rate Agreements' : 'GLA — Group Life Assurance') + ' Results';
   document.getElementById('resultsSubtitle').textContent =
     `Processing complete · ${data.total_rows.toLocaleString()} total rows`;
 
